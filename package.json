@@ -1,0 +1,18 @@
+{
+  "name": "smm-api",
+  "version": "1.0.1",
+  "description": "A wrapper around the SMM Cemu API",
+  "main": "index.js",
+  "keywords": [
+    "cemu",
+    "smm",
+    "super",
+    "mario",
+    "maker",
+    "cemui",
+    "api",
+    "wrapper"
+  ],
+  "author": "RedDucks",
+  "license": "ISC"
+}
