@@ -1,5 +1,5 @@
 # What it is
-> A NodeJS module for interacting with the SMM (Super Mario Maker) api, designed for Cemu.
+> A NodeJS module for interacting with the [SMMDb API](http://smmdb.ddns.net/api) (Super Mario Maker), designed for Cemu.
 
 ---
 
