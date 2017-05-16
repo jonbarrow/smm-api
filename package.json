@@ -6,6 +6,7 @@
   "keywords": [
     "cemu",
     "smm",
+    "smmdb",
     "super",
     "mario",
     "maker",
@@ -14,5 +15,13 @@
     "wrapper"
   ],
   "author": "RedDucks",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "querystring": "^0.2.0",
+    "request": "^2.81.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.24.1",
+    "babel-preset-env": "^1.4.0"
+  }
 }
