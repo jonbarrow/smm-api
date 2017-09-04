@@ -1,110 +1,123 @@
 # What it is
-> A NodeJS module for interacting with the [SMMDb API](http://smmdb.ddns.net/api) (Super Mario Maker), designed for Cemu.
+> A NodeJS module for interacting with the SMMDB (Super Mario Maker) api.
 
 ---
 
 ## Installation
 ```
-    $ npm install --save smm-api
+
+$ npm i --save smm-api
+
 ```
 
-## Searching for levels
-> smm.search({parameters}, callback);
-```
-    const smm = require('smm-api');
+### apiKey('KEY')
+> (optional) Sets the application SMMDB API key. Key is used for uploading and staring courses
+
+Accepts one argument:
+* `key`: SMMDB API Key
+```javascript
+const smm = require('smm-api');
     
-    // Search object is an object of your search parameters. A full list of parameters can be found at http://smmdb.ddns.net/api
-    smm.search({
-        'order': 'stars', // Search order
-        'dir': 'desc',    // Ascending or descending
-        'coursetype': 0,  // 0=Own Creation; 1=Recreation; 2=Wii U Dump;
-        'difficultyfrom': 2,
-        'difficultyto': 2,
-    }, function(response) { // The API response
-        var response = JSON.parse(response),
-            keys = Object.keys(response.courses);
-        console.log(keys.length);
-        for (var i = 0; i < keys.length; i++) {
-            // Logs all level titles
-            console.log(response.courses[keys[i]].title);
-        }
-    });
+smm.apiKey('KEY');
 ```
 
-## Staring levels
-> smm.starcourse(courseId, callback);
+### getStats(callback)
+> Gets overall SMMDB stats
+
+Accepts one argument:
+* `callback`: Callback run when method finishes
+    * `error`: An error, if there was one
+    * `stats`: SMMDB stats
+```javascript
+const smm = require('smm-api');
+
+smm.getStats((error, stats) => {
+	if (error) throw error;
+	console.log(stats);
+});
 ```
-    const smm = require('smm-api');
-    smm.apiKey('API_KEY');
+If no error, returns object:
+* `courses`: Number of SMM courses (total 3DS and WiiU)
+* `courses64`: Number of SM64M (Super Mario 64 Maker) levels
+* `accounts`: Number of accounts
+
+## searchCourses({parameters}, callback)
+> Searchs SMMDB courses
+
+Accepts two arguments:
+* `parameters`: Search parameters
+* `callback`: Callback run when method finishes
+    * `error`: An error, if there was one
+    * `courses`: Courses list
+For a list of accepted parameters, see https://github.com/Tarnadas/smmdb#receive-course-list
+```javascript
+const smm = require('smm-api');
+
+smm.searchCourses({
+	title: 'Test'
+}, (error, courses) => {
+	if (error) throw error;
+	console.log(courses);
+});
+```
+
+## starUnstarCourse(courseId, callback)
+> Star and unstar a course (requires API key)
+
+Accepts one argument:
+* `callback`: Callback run when method finishes
+    * `error`: An error, if there was one
+    * `course_data`: Data of the stared/unstared coures
+```javascript
+const smm = require('smm-api');
+smm.apiKey('API_KEY');
+
+// Stars the course
+smm.starUnstarCourse('59ab69804fa8fa5fb0946df3', (error, course_data) => {
+	if (error) throw error;
+	console.log(course_data);
+    // Course is now stared by you
+});
+
+// Unstars the course (call method 2nd time)
+smm.starUnstarCourse('59ab69804fa8fa5fb0946df3', (error, course_data) => {
+	if (error) throw error;
+	console.log(course_data);
+    // Course is now unstared by you
+});
+```
+
+## downloadCourse(courseId, target, callback)
+> Downloads course by ID to a specified folder
+
+Accepts three arguments:
+* `courseId`: ID of the course
+* `path`: Path to folder to save course to
+* `callback`: Callback run when method finishes
+    * `error`: An error, if there was one
+```javascript
+const smm = require('smm-api');
     
-    smm.starcourse(1, function(response) {
-        // Stars course `1` if API key is valid
-        console.log(response);
-    });
+smm.downloadCourse('59722397f160681a439d9b92', './', (error) => {
+	if (error) throw error;
+	console.log('Done');
+})
 ```
 
-## Unstaring levels
-> smm.unstarcourse(courseId, callback);
-```
-    const smm = require('smm-api');
-    smm.apiKey('API_KEY');
+## uploadCourse(path\_to\_course\_zip, callback)
+> Uploads course from given path (requires API key)
+
+Accepts two arguments:
+* `path_to_course_zip`: Path to compressed course folder
+* `callback`: Callback run when method finishes
+    * `error`: An error, if there was one
+    * `course_data`: Data of the uploaded course
+```javascript
+const smm = require('smm-api');
+smm.apiKey('API_KEY');
     
-    smm.unstarcourse(1, function(response) {
-        // Unstars course `1` if API key is valid
-        console.log(response);
-    });
-```
-
-## Completing levels
-> smm.complete(courseId, callback);
-```
-    const smm = require('smm-api');
-    smm.apiKey('API_KEY');
-    
-    smm.complete(1, function(response) {
-        // Completes course `1` if API key is valid
-        console.log(response);
-    });
-```
-
-## Uncompleting levels
-> smm.uncomplete(courseId, callback);
-```
-    const smm = require('smm-api');
-    smm.apiKey('API_KEY');
-    
-    smm.uncomplete(1, function(response) {
-        // Uncompletes course `1` if API key is valid
-        console.log(response);
-    });
-```
-
-## Downloading levels
-> smm.downloadCourse(courseId, target, callback);
-```
-    const smm = require('smm-api');
-    
-    smm.downloadCourse(1, 'path/to/download', function() {
-        // Downloads course `1`
-        console.log('Done downloading');
-    });
-```
-
-## Uploading levels (Currently does not work)
-> smm.uploadCourse(path, callback);
-```
-    const smm = require('smm-api');
-    smm.apiKey('API_KEY');
-    
-    smm.uploadCourse('path/to/level.zip', function() {
-        // Uploads course if API key is valid
-        console.log('Done uploading');
-    });
-```
-
-## Api Key
-> smm.apiKey('API_KEY');
-```
-    const smm = require('smm-api');
-    smm.apiKey('API_KEY'); // Used for all functions which require a key
+smm.uploadCourse('Course.zip', (error, course_data) => {
+	if (error) throw error;
+	console.log(course_data);
+})
 ```

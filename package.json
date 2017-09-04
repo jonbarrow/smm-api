@@ -1,12 +1,11 @@
 {
   "name": "smm-api",
-  "version": "1.0.1",
-  "description": "A wrapper around the SMM Cemu API",
+  "version": "2.0.1",
+  "description": "A NodeJS module for interacting with the SMMDB (Super Mario Maker) api",
   "main": "index.js",
   "keywords": [
     "cemu",
     "smm",
-    "smmdb",
     "super",
     "mario",
     "maker",
@@ -17,11 +16,6 @@
   "author": "RedDucks",
   "license": "ISC",
   "dependencies": {
-    "querystring": "^0.2.0",
     "request": "^2.81.0"
-  },
-  "devDependencies": {
-    "babel-core": "^6.24.1",
-    "babel-preset-env": "^1.4.0"
   }
 }

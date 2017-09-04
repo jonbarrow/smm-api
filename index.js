@@ -1,124 +1,108 @@
-import Request from 'request'
-import queryString from 'querystring'
 
-import fs from 'fs'
+const API_BASE = 'http://smmdb.ddns.net/api/';
 
-const request = Request.defaults({ encoding: null });
+var fs = require('fs'),
+	request = require('request').defaults({ encoding: null }),
+	querystring = require('querystring');
 
-const config = {
-    API_KEY: null,
-    errors: {
-        noAPIKey: 'No API key provided'
-    }
-};
+module.exports = {
+	'config': {
+        'API_KEY': null,
+        'errors': {
+        	'no_api_key': 'No API key provided'
+        }
+    },
+	apiKey: function(key) {
+  		this.config.API_KEY = key;
+	},
+	getStats: function(cb) {
+		request(API_BASE + 'getstats', (error, response, body) => {
+			if (error) return cb(error);
+			if (!response || response.statusCode !== 200) return cb('Invalid response code');
+			body = JSON.parse(body);
+			return cb(null, body);
+		});
+	},
+	searchCourses: function(query, cb) {
+		query = querystring.stringify(query);
+		request(API_BASE + 'getcourses?' + query, (error, response, body) => {
+			if (error) return cb(error);
+			if (!response || response.statusCode !== 200) return cb('Invalid response code');
+			body = JSON.parse(body);
+			return cb(null, body);
+		})
+	},
+	downloadCourse: function(courseId, target, cb) {
+		var req = request({
+	        method: 'GET',
+	        uri: API_BASE + 'downloadcourse?id=' + courseId + '&type=zip'
+	    });
 
-function apiRequest(method, url, cb) {
-    request({
-        url : url,
-        method : method
-    }, (error, response, body) => {
-        let res = response.headers;
-        res.body = body.toString();
-        cb(res);
-    });
-}
+	    var out = fs.createWriteStream(target + '/smm-course-' + courseId + '.zip');
+		req.pipe(out);
+		
+		req.on('error', (error) => {
+			return cb(error);
+		});
 
-function setApiKey (key) {
-    config.API_KEY = key;
-}
+		out.on('error', (error) => {
+			return cb(error);
+		});
 
-export function downloadCourse (courseId, target, cb) {
-    let req = request({
-        method: 'GET',
-        uri: 'http://smmdb.ddns.net/courses/'+courseId
-    });
+		out.on('finish', () => {
+			return cb();
+		});
+	},
+	uploadCourse: function(local_course, cb) {
+		if (!this.config.API_KEY) {
+			return cb(this.config.errors.no_api_key);
+		}
 
-    let out = fs.createWriteStream(target+'/smm-course-'+courseId+'.rar');
-    req.pipe(out);
+		var delimiter;
+		if (local_course.includes('/')) {
+			delimiter = '/';
+		} else if (local_course.includes('\\')) {
+			delimiter = '\\';
+		} else {
+			return cb('Cannot find file delimiter');
+		}
 
-    req.on('end', function() {
-        return cb();
-    });
-}
+		var name = local_course.split(delimiter),
+			name = name[name.length - 1].replace(/\.[^/.]+$/, '');
 
-export function uploadCourse (path, cb) {
-
-    //return console.log("UPLOADING DOES NOT WORK IN THIS VERSION OF SMM-API.");
-
-    if (!this.config.API_KEY) {
-        console.log(this.config.errors.noAPIKey);
-        return cb(JSON.stringify({ error: config.errors.noAPIKey }));
-    }
-
-    let _in = request({
-        method: 'POST',
-        headers: {
-            'request': 'uploadcourse',
-            'apikey': this.config.API_KEY
-        },
-        uri: 'http://smmdb.ddns.net/api'
-    });
-
-    let level = fs.createReadStream(path);
-
-    let req = level.pipe(_in);
-
-    req.on('data', data => {
-        console.log(data.toString());
-    });
-
-    req.on('end', () => {
-        return cb();
-    });
-}
-
-export function search (params, cb) {
-    let query = queryString.stringify(params);
-    apiRequest('GET', 'http://smmdb.ddns.net/api/getcourses?'+query, response => {
-        return cb(JSON.parse(response.body));
-    });
-}
-
-export function starCourse (courseId, cb) {
-    if (!this.config.API_KEY) {
-        console.log(this.config.errors.noAPIKey);
-        return cb(JSON.stringify({ error: config.errors.noAPIKey }));
-    }
-    let query = queryString.stringify({apikey: this.config.API_KEY, dostar: 1, courseid: courseId});
-    apiRequest('GET', 'http://smmdb.ddns.net/api/starcourse?'+query, response => {
-        return cb(JSON.parse(response.body));
-    });
-}
-
-export function unstarCourse (courseId, cb) {
-    if (!this.config.API_KEY) {
-        console.log(this.config.errors.noAPIKey);
-        return cb(JSON.stringify({ error: config.errors.noAPIKey }));
-    }
-    let query = queryString.stringify({apikey: this.config.API_KEY, dostar: 0, courseid: courseId});
-    apiRequest('GET', 'http://smmdb.ddns.net/api/starcourse?'+query, response => {
-        return cb(JSON.parse(response.body));
-    });
-}
-
-export function completeCourse (courseId, cb) {
-    if (!this.config.API_KEY) {
-        console.log(this.config.errors.noAPIKey);
-        return cb(JSON.stringify({ error: config.errors.noAPIKey }));
-    }
-    let query = queryString.stringify({apikey: this.config.API_KEY, docomplete: 1, courseid: courseId});
-    apiRequest('GET', 'http://smmdb.ddns.net/api/completecourse?'+query, response => {
-        return cb(JSON.parse(response.body));
-    });
-}
-
-export function uncompleteCourse(courseId, cb) {
-    if (!this.config.API_KEY) {
-        console.log(this.config.errors.noAPIKey);
-        return cb(JSON.stringify({ error: config.errors.noAPIKey }));
-    }
-    let query = queryString.stringify({apikey: this.config.API_KEY, docomplete: 0, courseid: courseId});
-    apiRequest('GET', 'http://smmdb.ddns.net/api/completecourse?'+query, response => {
-        return cb(JSON.parse(response.body));
-    });
+		request({
+			method: 'POST',
+			url: API_BASE + 'uploadcourse',
+			useElectronNet: false,
+			body: fs.readFileSync(local_course),
+			headers: {
+				'Authorization': 'APIKEY ' + this.config.API_KEY,
+				'Content-Type': 'application/octet-stream',
+				'Filename': name
+			}
+		}, (error, response, body) => {
+			if (error) return cb(error);
+			if (!response || response.statusCode !== 200) return cb('Invalid response code');
+			body = JSON.parse(body.toString());
+			return cb(null, body);
+		});
+	},
+	starUnstarCourse: function(courseId, cb) {
+		if (!this.config.API_KEY) {
+			return cb(this.config.errors.no_api_key);
+		}
+		request({
+			method: 'POST',
+			url: API_BASE + 'starcourse?id=' + courseId,
+			useElectronNet: false,
+			headers: {
+			  	'Authorization': 'APIKEY ' + this.config.API_KEY
+			}
+		}, (error, response, body) => {
+			if (error) return cb(error);
+			if (!response || response.statusCode !== 200) return cb('Invalid response code');
+			body = JSON.parse(body);
+			return cb(null, body);
+		});
+	}
 }
