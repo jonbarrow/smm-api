@@ -104,19 +104,21 @@ smm.downloadCourse('59722397f160681a439d9b92', './', (error) => {
 })
 ```
 
-## uploadCourse(path\_to\_course\_zip, callback)
+## uploadCourse(buffer, name, callback)
 > Uploads course from given path (requires API key)
 
 Accepts two arguments:
-* `path_to_course_zip`: Path to compressed course folder
+* `buffer`: Compressed level buffer
+* `name`: Course name
 * `callback`: Callback run when method finishes
     * `error`: An error, if there was one
     * `course_data`: Data of the uploaded course
 ```javascript
 const smm = require('smm-api');
 smm.apiKey('API_KEY');
-    
-smm.uploadCourse('Course.zip', (error, course_data) => {
+
+let buffer = fs.readFileSync('Course.zip');
+smm.uploadCourse(buffer, 'Test Course', (error, course_data) => {
 	if (error) throw error;
 	console.log(course_data);
 })

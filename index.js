@@ -53,28 +53,16 @@ module.exports = {
 			return cb();
 		});
 	},
-	uploadCourse: function(local_course, cb) {
+	uploadCourse: function(buffer, name, cb) {
 		if (!this.config.API_KEY) {
 			return cb(this.config.errors.no_api_key);
 		}
-
-		var delimiter;
-		if (local_course.includes('/')) {
-			delimiter = '/';
-		} else if (local_course.includes('\\')) {
-			delimiter = '\\';
-		} else {
-			return cb('Cannot find file delimiter');
-		}
-
-		var name = local_course.split(delimiter),
-			name = name[name.length - 1].replace(/\.[^/.]+$/, '');
 
 		request({
 			method: 'POST',
 			url: API_BASE + 'uploadcourse',
 			useElectronNet: false,
-			body: fs.readFileSync(local_course),
+			body: buffer,
 			headers: {
 				'Authorization': 'APIKEY ' + this.config.API_KEY,
 				'Content-Type': 'application/octet-stream',
