@@ -1,6 +1,6 @@
 {
   "name": "smm-api",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A NodeJS module for interacting with the SMMDB (Super Mario Maker) api",
   "main": "index.js",
   "keywords": [
