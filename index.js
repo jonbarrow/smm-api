@@ -1,5 +1,5 @@
 
-const API_BASE = 'http://smmdb.ddns.net/api/';
+const API_BASE = 'https://smmdb.ddns.net/api/';
 
 var fs = require('fs'),
 	request = require('request').defaults({ encoding: null }),
@@ -53,8 +53,8 @@ module.exports = {
 			return cb();
 		});
 	},
-	uploadCourse: function(buffer, name, cb) {
-		if (!this.config.API_KEY) {
+	uploadCourse: function(buffer, cb) {
+		if (!this.config.API_KEY || this.config.API_KEY.trim() == '') {
 			return cb(this.config.errors.no_api_key);
 		}
 
@@ -65,18 +65,19 @@ module.exports = {
 			body: buffer,
 			headers: {
 				'Authorization': 'APIKEY ' + this.config.API_KEY,
-				'Content-Type': 'application/octet-stream',
-				'Filename': name
+				'Content-Type': 'application/octet-stream'
 			}
 		}, (error, response, body) => {
 			if (error) return cb(error);
-			if (!response || response.statusCode !== 200) return cb('Invalid response code');
+			if (!response || response.statusCode !== 200) {
+				return cb('Invalid response code');
+			}
 			body = JSON.parse(body.toString());
 			return cb(null, body);
 		});
 	},
 	starUnstarCourse: function(courseId, cb) {
-		if (!this.config.API_KEY) {
+		if (!this.config.API_KEY || this.config.API_KEY.trim() == '') {
 			return cb(this.config.errors.no_api_key);
 		}
 		request({

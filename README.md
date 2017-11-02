@@ -104,12 +104,11 @@ smm.downloadCourse('59722397f160681a439d9b92', './', (error) => {
 })
 ```
 
-## uploadCourse(buffer, name, callback)
+## uploadCourse(buffer, callback)
 > Uploads course from given path (requires API key)
 
 Accepts two arguments:
 * `buffer`: Compressed level buffer
-* `name`: Course name
 * `callback`: Callback run when method finishes
     * `error`: An error, if there was one
     * `course_data`: Data of the uploaded course
